@@ -1,0 +1,259 @@
+﻿<Window x:Class="ObjectDetectTrackApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ObjectDetectTrackApp"
+        xmlns:controls="clr-namespace:ObjectDetectTrackApp.Controls"
+        Title="Object Detect/Track Utility"
+        Width="1400" Height="900"
+        Background="{DynamicResource TerminalBgBrush}"
+        Foreground="{DynamicResource TerminalFgBrush}"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Window.Resources>
+        <ResourceDictionary Source="pack://application:,,,/Resources/TerminalTheme.xaml"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- STATUS BAR -->
+        <Border Grid.Row="0" Background="#333333" Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" 
+                           Text="{Binding StatusText}" 
+                           Foreground="White" FontFamily="Consolas" FontSize="11"/>
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding Resolution}" 
+                           Foreground="White" FontFamily="Consolas" FontSize="11"
+                           Margin="20,0,0,0"/>
+                <TextBlock Grid.Column="2" 
+                           Text="{Binding ActiveTracksCount, StringFormat='Active Tracks: {0}'}" 
+                           Foreground="#00FF00" FontFamily="Consolas" FontSize="11"
+                           Margin="20,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- MAIN CONTENT -->
+        <Grid Grid.Row="1" Margin="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT: Sources/Queue -->
+            <Border Grid.Column="0" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="SOURCES" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                    <ListBox Grid.Row="1" 
+                             ItemsSource="{Binding SourcesViewModel.Sources}"
+                             SelectedItem="{Binding SourcesViewModel.SelectedSource}"
+                             Background="#000000" 
+                             Foreground="White" 
+                             BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FileName}" 
+                                           Foreground="White" 
+                                           FontFamily="Consolas" 
+                                           FontSize="10"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="+ Image"
+                                Command="{Binding SourcesViewModel.AddImageCommand}"
+                                Margin="0,0,4,0"/>
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="+ Video"
+                                Command="{Binding SourcesViewModel.AddVideoCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- CENTER: Preview -->
+            <Border Grid.Column="1" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+                <Grid Background="Black">
+                    <Image x:Name="PreviewImage" 
+                           Source="{Binding PreviewImage}" 
+                           Stretch="UniformToFill"/>
+                    <TextBlock Text="[No source]" 
+                               Foreground="White" 
+                               Opacity="0.5" 
+                               FontFamily="Consolas" 
+                               FontSize="11" 
+                               VerticalAlignment="Center" 
+                               HorizontalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- RIGHT: Detections -->
+            <Border Grid.Column="2" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="DETECTIONS" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                    <ListBox Grid.Row="1"
+                             ItemsSource="{Binding Detections}"
+                             Background="#000000"
+                             Foreground="#00FF00"
+                             BorderThickness="0"
+                             FontFamily="Consolas"
+                             FontSize="9">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat=" {0} | {1:F2}">
+                                            <Binding Path="ClassName"/>
+                                            <Binding Path="Confidence"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- BOTTOM: Log + Controls -->
+        <Grid Grid.Row="2" Margin="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT: Log -->
+            <Border Grid.Column="0" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="LOG" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                    <ListBox Grid.Row="1" 
+                             x:Name="LogListBox"
+                             ItemsSource="{Binding LogViewModel.Logs}"
+                             Background="#000000" 
+                             Foreground="White" 
+                             BorderThickness="0" 
+                             MaxHeight="100">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" 
+                                           Foreground="White" 
+                                           FontFamily="Consolas" 
+                                           FontSize="9"
+                                           ToolTip="Правый клик для копирования"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- RIGHT: Controls -->
+            <Border Grid.Column="1" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="CONTROLS" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="▶ Play" Width="60"
+                                Command="{Binding PlayCommand}"
+                                Margin="0,0,4,0"/>
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="⏸ Pause" Width="60"
+                                Command="{Binding PauseCommand}"
+                                Margin="0,0,4,0"/>
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="⏹ Stop" Width="60"
+                                Command="{Binding StopCommand}"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="2" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="30"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Conf:" Foreground="White" FontFamily="Consolas" FontSize="9" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <Slider Grid.Column="1" 
+                                Minimum="0" Maximum="1" Value="{Binding ConfidenceThreshold}"
+                                Background="#333333"
+                                Foreground="#00FF00"/>
+                        <TextBlock Grid.Column="2" 
+                                   Text="{Binding ConfidenceThreshold, StringFormat=' {0:F2}'}"
+                                   Foreground="#00FF00" FontFamily="Consolas" FontSize="9" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <CheckBox Grid.Row="3"
+                              IsChecked="{Binding FilterPersonOnly}"
+                              Foreground="White"
+                              FontFamily="Consolas"
+                              FontSize="9"
+                              Margin="0,0,0,8"
+                              Content="Only Person"/>
+
+                    <Grid Grid.Row="4" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="NMS:" Foreground="White" FontFamily="Consolas" FontSize="9" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <Slider Grid.Column="1" 
+                                Minimum="0" Maximum="1" Value="{Binding NmsThreshold}"
+                                Background="#333333"
+                                Foreground="#00FF00"/>
+                    </Grid>
+
+                    <StackPanel Grid.Row="5" Orientation="Vertical" Margin="0,8,0,0">
+                        <TextBlock Text="EXPORT" Foreground="White" FontFamily="Consolas" FontSize="9" FontWeight="Bold" Margin="0,0,0,4"/>
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="📄 JSON" 
+                                Command="{Binding ExportJsonCommand}"
+                                Margin="0,0,0,4"/>
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="📊 CSV" 
+                                Command="{Binding ExportCsvCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

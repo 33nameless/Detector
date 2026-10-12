@@ -1,0 +1,61 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:ObjectDetectTrackApp.Converters">
+
+	<!-- CONVERTERS -->
+	<local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+
+	<!-- COLORS -->
+	<Color x:Key="TerminalBg">#000000</Color>
+	<Color x:Key="TerminalFg">#FFFFFF</Color>
+	<Color x:Key="TerminalAccent">#00FF00</Color>
+	<Color x:Key="TerminalWarn">#FFAA00</Color>
+	<Color x:Key="TerminalError">#FF0000</Color>
+	<Color x:Key="TerminalGrid">#333333</Color>
+
+	<SolidColorBrush x:Key="TerminalBgBrush" Color="{StaticResource TerminalBg}"/>
+	<SolidColorBrush x:Key="TerminalFgBrush" Color="{StaticResource TerminalFg}"/>
+	<SolidColorBrush x:Key="TerminalAccentBrush" Color="{StaticResource TerminalAccent}"/>
+	<SolidColorBrush x:Key="TerminalWarnBrush" Color="{StaticResource TerminalWarn}"/>
+	<SolidColorBrush x:Key="TerminalErrorBrush" Color="{StaticResource TerminalError}"/>
+	<SolidColorBrush x:Key="TerminalGridBrush" Color="{StaticResource TerminalGrid}"/>
+
+	<!-- FONTS -->
+	<FontFamily x:Key="TerminalFont">Consolas, Cascadia Mono</FontFamily>
+
+	<!-- STYLES -->
+	<Style x:Key="TerminalTextBlockStyle" TargetType="TextBlock">
+		<Setter Property="Foreground" Value="{StaticResource TerminalFgBrush}"/>
+		<Setter Property="FontFamily" Value="{StaticResource TerminalFont}"/>
+		<Setter Property="FontSize" Value="11"/>
+	</Style>
+
+	<Style x:Key="TerminalButtonStyle" TargetType="Button">
+		<Setter Property="Background" Value="{StaticResource TerminalGridBrush}"/>
+		<Setter Property="Foreground" Value="{StaticResource TerminalFgBrush}"/>
+		<Setter Property="BorderBrush" Value="{StaticResource TerminalFgBrush}"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="Padding" Value="8,4"/>
+		<Setter Property="FontFamily" Value="{StaticResource TerminalFont}"/>
+		<Setter Property="FontSize" Value="11"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+						<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter Property="Background" Value="{StaticResource TerminalAccentBrush}"/>
+							<Setter Property="Foreground" Value="{StaticResource TerminalBgBrush}"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</ResourceDictionary>
