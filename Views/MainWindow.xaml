@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ObjectDetectTrackApp"
         xmlns:controls="clr-namespace:ObjectDetectTrackApp.Controls"
+        xmlns:conv="clr-namespace:ObjectDetectTrackApp.Converters"
         Title="Object Detect/Track Utility"
         Width="1400" Height="900"
         Background="{DynamicResource TerminalBgBrush}"
@@ -10,8 +11,18 @@
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
 
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding ClearSelectionCommand}"/>
+    </Window.InputBindings>
+
     <Window.Resources>
-        <ResourceDictionary Source="pack://application:,,,/Resources/TerminalTheme.xaml"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Resources/TerminalTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        </ResourceDictionary>
     </Window.Resources>
 
     <Grid>
@@ -53,135 +64,307 @@
             </Grid.ColumnDefinitions>
 
             <!-- LEFT: Sources/Queue -->
-            <Border Grid.Column="0" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+            <Border Grid.Column="0" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4,15,4,-225">
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- SOURCES header -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="SOURCES" Foreground="White" FontFamily="Consolas"
+                               FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
 
-                    <TextBlock Grid.Row="0" Text="SOURCES" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
-
-                    <ListBox Grid.Row="1" 
-                             ItemsSource="{Binding SourcesViewModel.Sources}"
-                             SelectedItem="{Binding SourcesViewModel.SelectedSource}"
-                             Background="#000000" 
-                             Foreground="White" 
-                             BorderThickness="0">
+                    <TextBlock Grid.Row="1" Text="IMAGES" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                    <ListBox Grid.Row="2"
+                             ItemsSource="{Binding SourcesViewModel.Images}"
+                             SelectedItem="{Binding SourcesViewModel.ImageSelected}"
+                             Background="#000000" Foreground="White" BorderThickness="0">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding FileName}" 
-                                           Foreground="White" 
-                                           FontFamily="Consolas" 
-                                           FontSize="10"/>
+                                <TextBlock Text="{Binding FileName}" Foreground="White" FontFamily="Consolas" FontSize="10"/>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
-                        <Button Style="{StaticResource TerminalButtonStyle}" 
-                                Content="+ Image"
-                                Command="{Binding SourcesViewModel.AddImageCommand}"
-                                Margin="0,0,4,0"/>
-                        <Button Style="{StaticResource TerminalButtonStyle}" 
-                                Content="+ Video"
-                                Command="{Binding SourcesViewModel.AddVideoCommand}"/>
+                    <TextBlock Grid.Row="3" Text="VIDEOS" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,8,0,6"/>
+                    <ListBox Grid.Row="4"
+                             ItemsSource="{Binding SourcesViewModel.Videos}"
+                             SelectedItem="{Binding SourcesViewModel.VideoSelected}"
+                             Background="#000000" Foreground="White" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FileName}" Foreground="#B0BEC5" FontFamily="Consolas" FontSize="10"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="5" Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource TerminalButtonStyle}" Content="+ Image"
+                                    Command="{Binding SourcesViewModel.AddImageCommand}" Margin="0,0,4,0"/>
+                            <Button Style="{StaticResource TerminalButtonStyle}" Content="+ Video"
+                                    Command="{Binding SourcesViewModel.AddVideoCommand}"/>
+                        </StackPanel>
+                        <Button Style="{StaticResource TerminalButtonStyle}" Content="Remove"
+                                Command="{Binding SourcesViewModel.RemoveSelectedCommand}"
+                                Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- CENTER: Preview -->
-            <Border Grid.Column="1" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
-                <Grid Background="Black">
-                    <Image x:Name="PreviewImage" 
-                           Source="{Binding PreviewImage}" 
-                           Stretch="UniformToFill"/>
-                    <TextBlock Text="[No source]" 
-                               Foreground="White" 
-                               Opacity="0.5" 
-                               FontFamily="Consolas" 
-                               FontSize="11" 
-                               VerticalAlignment="Center" 
-                               HorizontalAlignment="Center"/>
-                </Grid>
+            <Border Grid.Column="1" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4,4,4,-225">
+                <Grid Background="Black" ClipToBounds="True">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- PREVIEW header -->
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="PREVIEW" Foreground="White" FontFamily="Consolas"
+                               FontSize="11" FontWeight="Bold" Margin="0,0,4,6"
+                               HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <ScrollViewer Grid.Row="1" x:Name="PreviewScroll"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Background="Transparent"
+                                  PreviewMouseWheel="Preview_MouseWheel"
+                                  MouseLeftButtonDown="Preview_MouseLeftButtonDown"
+                                  MouseMove="Preview_MouseMove"
+                                  MouseLeftButtonUp="Preview_MouseLeftButtonUp"
+                                  MouseDoubleClick="Preview_DoubleClick">
+                        <!-- Размер картинки = viewport, Stretch=Uniform => вписывается по границам окна;
+                             зум крутит LayoutTransform, ScrollViewer даёт прокрутку при >100% -->
+                        <Image x:Name="PreviewImage"
+                               Source="{Binding PreviewImage}"
+                               Width="{Binding ViewportWidth, ElementName=PreviewScroll}"
+                               Height="{Binding ViewportHeight, ElementName=PreviewScroll}"
+                               Stretch="Uniform"
+                               RenderOptions.BitmapScalingMode="HighQuality">
+                            <Image.LayoutTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Image.LayoutTransform>
+                        </Image>
+                    </ScrollViewer>
+
+                    <TextBlock Grid.Row="1" Text="[No source] · колесо мыши — зум, двойной клик — вписать"
+                               Foreground="White" Opacity="0.5" FontFamily="Consolas" FontSize="11"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               IsHitTestVisible="False"
+                               Visibility="{Binding PreviewImage, Converter={StaticResource NullToVis}}"/>
+
+                    <Border Grid.Row="1" Background="#80000000" CornerRadius="4" Padding="6,2"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,8,0">
+                        <TextBlock x:Name="ZoomLabel" Text="100%" Foreground="#00FF00"
+                                   FontFamily="Consolas" FontSize="10" Visibility="Collapsed"/>
+                    </Border>
+                    <Grid Grid.Row="2" x:Name="TimelineBox" Height="40" Margin="0,6,0,0" Background="#050505"
+                          MouseLeftButtonUp="Timeline_MouseUp" Cursor="Hand"
+                          ToolTip="Клик — перейти к кадру"
+                          Visibility="{Binding HasTimeline, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="TIMELINE" Foreground="#666666"
+                                   FontFamily="Consolas" FontSize="9" VerticalAlignment="Center" Margin="6,0"/>
+                        <controls:MiniTimeline Grid.Column="1" x:Name="Tl" Margin="0,5"
+                                          FrameCount="{Binding TimelineFrameCount}"
+                                          Playhead="{Binding CurrentFrameIndex}"/>
+                        <TextBlock Grid.Column="2" Foreground="#FFC107" FontFamily="Consolas" FontSize="9"
+                                   VerticalAlignment="Center" Margin="6,0"><Run Text="f"/><Run Text="{Binding CurrentFrameIndex, Mode=OneWay}"/><Run Text="/"/><Run Text="{Binding TimelineFrameCount, Mode=OneWay}"/></TextBlock>
+                    </Grid>
+                                    </Grid>
             </Border>
 
-            <!-- RIGHT: Detections -->
-            <Border Grid.Column="2" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+            <!-- RIGHT: Detections (current) + Results (all frames) -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="DETECTIONS · CURRENT FRAME" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock Grid.Column="1" Text="{Binding TrackingInfo}" Foreground="#00FF00" FontFamily="Consolas" FontSize="9"
+                                       VerticalAlignment="Center" Margin="8,0,6,0" TextTrimming="CharacterEllipsis"
+                                       ToolTip="Кто подсвечивается/трекается сейчас"/>
+                            <ToggleButton Grid.Column="2" Padding="6,1" FontSize="11" Cursor="Hand"
+                                          Content="🎯" Foreground="#FFFFFF"
+                                          IsChecked="{Binding SelectMode}"
+                                          ToolTip="Режим выбора кликом по превью: клик — выбрать, Ctrl+клик — добавить/убрать, Esc — сброс. Чекбокс в списке — следим за объектом"/>
+                            <Button Grid.Column="3" Content="✖" Command="{Binding ClearSelectionCommand}"
+                                    Style="{StaticResource TerminalButtonStyle}"
+                                    Padding="6,1" FontSize="9" MinWidth="0" MinHeight="0" Margin="4,0,0,0"
+                                    ToolTip="Снять выбор — подсветка всех объектов"/>
+                        </Grid>
+
+                        <ListBox Grid.Row="1"
+                                 ItemsSource="{Binding Detections}"
+                                 Background="#000000"
+                                 Foreground="#00FF00"
+                                 BorderThickness="0"
+                                 FontFamily="Consolas"
+                                 FontSize="10"
+                                 HorizontalContentAlignment="Stretch"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,6,0" Cursor="Hand"
+                                                  ToolTip="Следить только за этим объектом"
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  Checked="Det_Track_Toggled" Unchecked="Det_Track_Toggled"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding DisplayLine}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="2,3"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Background" Value="#1B5E20"/>
+                                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="RESULTS · CLICK = FRAME" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock Grid.Column="1" Text="{Binding SessionDetections.Count, StringFormat=[{0}]}" Foreground="#00FF00" FontFamily="Consolas" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Button Grid.Column="2" Content="clear" Command="{Binding ClearSessionCommand}"
+                                    Style="{StaticResource TerminalButtonStyle}"
+                                    Padding="8,2" FontSize="9" MinWidth="0" MinHeight="0"/>
+                        </Grid>
+
+                        <ListBox Grid.Row="1" x:Name="SessionListBox"
+                                 ItemsSource="{Binding SessionDetections}"
+                                 SelectedItem="{Binding SelectedSessionDetection}"
+                                 Background="#000000"
+                                 Foreground="#B0BEC5"
+                                 BorderThickness="0"
+                                 FontFamily="Consolas"
+                                 FontSize="10"
+                                 HorizontalContentAlignment="Stretch"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ToolTip="Клик по строке — показать этот кадр с боксами">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding SessionLine}" TextWrapping="Wrap"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="2,3"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#1B5E20"/>
+                                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </Grid>
+                </Border>
+            </Grid>
+
+        </Grid>
+
+        <!-- BOTTOM: лог — компактный блок слева внизу (не растянут), CONTROLS справа -->
+        <Grid Grid.Row="2" Margin="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Height="176" VerticalAlignment="Bottom" Background="#000000"
+                    BorderBrush="#FFFFFF" BorderThickness="1" Padding="8,4" Margin="0,0,4,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0" Text="DETECTIONS" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
-
-                    <ListBox Grid.Row="1"
-                             ItemsSource="{Binding Detections}"
-                             Background="#000000"
-                             Foreground="#00FF00"
-                             BorderThickness="0"
+                    <Grid Grid.Row="0" Margin="0,0,0,3">
+                        <TextBlock Text="LOG" Foreground="White" FontFamily="Consolas" FontSize="10" FontWeight="Bold"/>
+                        <Button Content="clear" Command="{Binding ClearLogCommand}"
+                                Style="{StaticResource TerminalButtonStyle}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Padding="8,1" FontSize="8" MinWidth="0" MinHeight="0"/>
+                    </Grid>
+                    <ListBox Grid.Row="1" x:Name="LogListBox"
+                             ItemsSource="{Binding LogViewModel.Logs}"
+                             Background="#000000" Foreground="White" BorderThickness="0"
                              FontFamily="Consolas"
-                             FontSize="9">
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             MouseRightButtonUp="LogListBox_MouseRightButtonUp">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock>
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat=" {0} | {1:F2}">
-                                            <Binding Path="ClassName"/>
-                                            <Binding Path="Confidence"/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
+                                <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="8"
+                                           TextWrapping="Wrap" ToolTip="Правый клик — копировать">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#B0BEC5"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Level}" Value="Warn">
+                                                    <Setter Property="Foreground" Value="#FFC107"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Level}" Value="Error">
+                                                    <Setter Property="Foreground" Value="#FF5252"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
                                 </TextBlock>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </Grid>
             </Border>
-        </Grid>
 
-        <!-- BOTTOM: Log + Controls -->
-        <Grid Grid.Row="2" Margin="4">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="300"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- LEFT: Log -->
-            <Border Grid.Column="0" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
+            <Border Grid.Column="1" Background="#000000" VerticalAlignment="Top" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0" Text="LOG" Foreground="White" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
-
-                    <ListBox Grid.Row="1" 
-                             x:Name="LogListBox"
-                             ItemsSource="{Binding LogViewModel.Logs}"
-                             Background="#000000" 
-                             Foreground="White" 
-                             BorderThickness="0" 
-                             MaxHeight="100">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" 
-                                           Foreground="White" 
-                                           FontFamily="Consolas" 
-                                           FontSize="9"
-                                           ToolTip="Правый клик для копирования"/>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Grid>
-            </Border>
-
-            <!-- RIGHT: Controls -->
-            <Border Grid.Column="1" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4">
-                <Grid>
-                    <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -194,15 +377,15 @@
 
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
                         <Button Style="{StaticResource TerminalButtonStyle}" 
-                                Content="▶ Play" Width="60"
+                                Content="▶ Play"
                                 Command="{Binding PlayCommand}"
                                 Margin="0,0,4,0"/>
                         <Button Style="{StaticResource TerminalButtonStyle}" 
-                                Content="⏸ Pause" Width="60"
+                                Content="⏸ Pause"
                                 Command="{Binding PauseCommand}"
                                 Margin="0,0,4,0"/>
                         <Button Style="{StaticResource TerminalButtonStyle}" 
-                                Content="⏹ Stop" Width="60"
+                                Content="⏹ Stop"
                                 Command="{Binding StopCommand}"/>
                     </StackPanel>
 
@@ -222,13 +405,15 @@
                                    Foreground="#00FF00" FontFamily="Consolas" FontSize="9" VerticalAlignment="Center"/>
                     </Grid>
 
-                    <CheckBox Grid.Row="3"
-                              IsChecked="{Binding FilterPersonOnly}"
-                              Foreground="White"
-                              FontFamily="Consolas"
-                              FontSize="9"
-                              Margin="0,0,0,8"
-                              Content="Only Person"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+                        <CheckBox IsChecked="{Binding FilterPersonOnly}"
+                                  Foreground="White" FontFamily="Consolas" FontSize="9"
+                                  Content="Only Person"/>
+                        <CheckBox IsChecked="{Binding EnableTracking}"
+                                  Foreground="White" FontFamily="Consolas" FontSize="9"
+                                  Margin="14,0,0,0"
+                                  Content="Tracking (SORT)"/>
+                    </StackPanel>
 
                     <Grid Grid.Row="4" Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
@@ -242,7 +427,22 @@
                                 Foreground="#00FF00"/>
                     </Grid>
 
-                    <StackPanel Grid.Row="5" Orientation="Vertical" Margin="0,8,0,0">
+                    <Grid Grid.Row="5" Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Highlight:" Foreground="White" FontFamily="Consolas" FontSize="9" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <ComboBox Grid.Column="1" Style="{StaticResource TerminalComboStyle}"
+                                  SelectedIndex="{Binding HighlightModeIndex}">
+                            <ComboBoxItem Content="Боксы"/>
+                            <ComboBoxItem Content="Контур"/>
+                            <ComboBoxItem Content="Боксы + контур"/>
+                            <ComboBoxItem Content="Маска + контур"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <StackPanel Grid.Row="6" Orientation="Vertical" Margin="0,8,0,0">
                         <TextBlock Text="EXPORT" Foreground="White" FontFamily="Consolas" FontSize="9" FontWeight="Bold" Margin="0,0,0,4"/>
                         <Button Style="{StaticResource TerminalButtonStyle}" 
                                 Content="📄 JSON" 
@@ -250,7 +450,32 @@
                                 Margin="0,0,0,4"/>
                         <Button Style="{StaticResource TerminalButtonStyle}" 
                                 Content="📊 CSV" 
-                                Command="{Binding ExportCsvCommand}"/>
+                                Command="{Binding ExportCsvCommand}"
+                                Margin="0,0,0,4"/>
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Style="{StaticResource TerminalButtonStyle}" 
+                                    Content="✚ Mark frame" 
+                                    ToolTip="Отметить/снять текущий кадр для выборочного экспорта (повторное нажатие снимает отметку, дубли исключены)"
+                                    Command="{Binding MarkCurrentFrameCommand}" Margin="0,0,4,0"/>
+                            <Button Grid.Column="1" Style="{StaticResource TerminalButtonStyle}" 
+                                    Content="⌫" MinWidth="36"
+                                    ToolTip="Снять все отметки кадров"
+                                    Command="{Binding ClearExportMarksCommand}"/>
+                        </Grid>
+                        <TextBlock Text="{Binding ExportMarksText}" Foreground="#FFAA00" 
+                                   FontFamily="Consolas" FontSize="9" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="🖼 Frames" 
+                                ToolTip="Кадры с боксами в папку: отмеченные (если есть) — иначе все с детекциями"
+                                Command="{Binding ExportFramesCommand}" Margin="0,0,0,4"/>
+                        <Button Style="{StaticResource TerminalButtonStyle}" 
+                                Content="🎬 Video" 
+                                ToolTip="Весь видеофайл с обводкой (режим из Highlight): MP4, фолбэки кодеков"
+                                Command="{Binding ExportVideoCommand}"/>
                     </StackPanel>
                 </Grid>
             </Border>

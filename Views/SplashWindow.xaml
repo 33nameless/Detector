@@ -7,7 +7,7 @@
         ShowInTaskbar="False" Topmost="True"
         WindowStartupLocation="CenterScreen"
         Background="#000000"
-        BorderBrush="#ddffff" BorderThickness="2"
+        BorderBrush="#ccffff" BorderThickness="2"
         FontFamily="Consolas"
         SnapsToDevicePixels="True">
 
@@ -22,15 +22,15 @@
         <!-- Дождь: НА ВСЁ окно (нижняя панель непрозрачна и «накрывает» его, на
              прогресс-бар символы физически не попадают). Колонки считаются по факту. -->
         <TextBlock Grid.Row="0" Grid.RowSpan="2" x:Name="Rain"
-                   Foreground="#dd0023" Opacity="0.20" FontSize="13"
+                   Foreground="#007777" Opacity="0.20" FontSize="13"
                    Margin="12,8,12,4" IsHitTestVisible="False"
                    LineStackingStrategy="BlockLineHeight" LineHeight="15"/>
 
         <Border Grid.Row="0" Background="#E6000000" Padding="22,12"
                 HorizontalAlignment="Center" VerticalAlignment="Center"
                 BorderBrush="#333333" BorderThickness="1">
-            <TextBlock x:Name="Title" Text="GRIDHOUND"
-                       Foreground="#ddffff" FontSize="26" FontWeight="Bold"/>
+            <TextBlock x:Name="Title" Text="DETECTOR"
+                       Foreground="#ccffff" FontSize="26" FontWeight="Bold"/>
         </Border>
 
         <!-- Нижняя панель: непрозрачный фон = цвет интерфейса -->
@@ -45,11 +45,11 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" x:Name="Steps"
-                           Foreground="#FFFFFF" Opacity="0.85" FontSize="12" LineHeight="16"
+                           Foreground="#007777" Opacity="0.85" FontSize="12" LineHeight="16"
                            LineStackingStrategy="BlockLineHeight"/>
 
                 <TextBlock Grid.Row="1" x:Name="Bar" Margin="0,10,0,4"
-                           Foreground="#ddffff" FontSize="14"/>
+                           Foreground="#ccffff" FontSize="14"/>
 
                 <TextBlock Grid.Row="2" x:Name="Specs"
                            Foreground="#FFFFFF" Opacity="0.55" FontSize="10"

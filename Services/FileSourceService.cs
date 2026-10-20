@@ -87,7 +87,7 @@ namespace ObjectDetectTrackApp.Services
             }
         }
 
-        public bool ReadNextFrame(out FrameData frameData)
+        public bool ReadNextFrame(out FrameData frameData, bool rawOnly = false)
         {
             frameData = null;
 
@@ -104,7 +104,7 @@ namespace ObjectDetectTrackApp.Services
             int frameIndex = (int)_videoCapture.Get(VideoCaptureProperties.PosFrames) - 1;
             double timestamp = _videoCapture.Get(VideoCaptureProperties.PosMsec);
 
-            frameData = CreateFrameData(frame, frameIndex, timestamp);
+            frameData = CreateFrameData(frame, frameIndex, timestamp, encodeBytes: !rawOnly);
             frame.Dispose();
 
             return true;
@@ -142,14 +142,15 @@ namespace ObjectDetectTrackApp.Services
             _currentFrame = null;
         }
 
-        private FrameData CreateFrameData(Mat frame, int frameIndex, double timestamp)
+        private FrameData CreateFrameData(Mat frame, int frameIndex, double timestamp, bool encodeBytes = true)
         {
             // frame — BGR (нативный порядок каналов OpenCV), и оставляем BGR.
             // Раньше кадр сначала переводили в RGB, а потом кодировали ImEncode,
             // который ждёт именно BGR — из-за этого на экране менялись местами
             // красный и синий («инверсия»). Конверсия в RGB для сети делается
             // внутри DetectorService,Так всё и задумано: BGR.
-            byte[] imageBytes = frame.ToBytes(".png");
+            // PNG на каждый кадр прогона стоил 10-30мс — для стрима не кодируем вовсе
+            byte[] imageBytes = encodeBytes ? frame.ToBytes(".png") : null;
 
             var frameData = new FrameData
             {

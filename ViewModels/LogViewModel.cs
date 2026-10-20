@@ -8,17 +8,13 @@ namespace ObjectDetectTrackApp.ViewModels
     {
         private readonly LogService _logService;
 
-        [ObservableProperty]
-        public ObservableCollection<LogEntry> logs;
+        /// <summary>Тот же экземпляр коллекции LogService — обновления приходят «живьём».</summary>
+        public ObservableCollection<LogEntry> Logs { get; }
 
         public LogViewModel(LogService logService)
         {
             _logService = logService;
-            // Привязываемся к коллекции логов
-            Logs = new ObservableCollection<LogEntry>(_logService.Logs);
-
-            // Подписываемся на новые логи (через рефлексию или простой callback)
-            // Для MVP достаточно привязать один раз к коллекции
+            Logs = _logService.Logs;
         }
     }
 }

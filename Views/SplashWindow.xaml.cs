@@ -24,7 +24,7 @@ namespace ObjectDetectTrackApp.Views
         private const int WelcomeTicks = 16;    // пауза WELCOME ~0.8 с
         private const string RainAlphabet = "0123456789ABCDEF#$%&*+=/\\<>|";
         private const string ScrambleAlphabet = "#%&$@01<>/\\*+=ABCDEF";
-        private const string TitleTarget = "GRIDHOUND · TRACK UTILITY";
+        private const string TitleTarget = "DETECTOR · TRACK UTILITY";
         private static readonly char[] RainChars = RainAlphabet.ToCharArray();
         private static readonly char[] ScrambleChars = ScrambleAlphabet.ToCharArray();
         private static readonly Random Rng = new Random();

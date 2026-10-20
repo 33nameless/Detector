@@ -220,25 +220,31 @@ namespace ObjectDetectTrackApp.Services
             _logService.Info($"Video playback started: {frameCount} frames @ {fps} fps");
 
             int frameIdx = 0;
+            // Темп считаем ОТ старта кадра: раньше Sleep добавлялся поверх времени
+            // обработки (инференс+кодирование) — отсюда низкий fps и дребезг.
+            var pace = System.Diagnostics.Stopwatch.StartNew();
             while (!ct.IsCancellationRequested && frameIdx < frameCount)
             {
                 // Пауза
                 while (_isPaused && !ct.IsCancellationRequested)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(50);
                 }
 
                 if (ct.IsCancellationRequested)
                     break;
 
-                // Читаем кадр
-                if (_fileSourceService.ReadNextFrame(out var frameData))
+                pace.Restart();
+
+                // Читаем кадр (rawOnly — без PNG; превью кодирует VM при нужде)
+                if (_fileSourceService.ReadNextFrame(out var frameData, rawOnly: true))
                 {
+                    frameData.IsStream = true;
                     FrameReady?.Invoke(this, frameData);
                     frameIdx++;
 
-                    // Ждём перед следующим кадром
-                    Thread.Sleep(_frameDelayMs);
+                    long left = _frameDelayMs - pace.ElapsedMilliseconds;
+                    if (left > 1) Thread.Sleep((int)left);
                 }
                 else
                 {
