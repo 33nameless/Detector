@@ -1,4 +1,4 @@
-﻿namespace ObjectDetectTrackApp.Models
+namespace ObjectDetectTrackApp.Models
 {
     /// <summary>
     /// Настройки приложения

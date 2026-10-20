@@ -3,7 +3,8 @@
 namespace ObjectDetectTrackApp.Models
 {
     /// <summary>
-    /// Данные одного кадра (с преобразованием в byte[] для WPF)
+    /// Данные одного кадра. Frame — Mat в BGR (нативный OpenCV),
+    /// FrameBytes — PNG в корректном порядке каналов для WPF Image.
     /// </summary>
     public class FrameData
     {

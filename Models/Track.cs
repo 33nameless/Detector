@@ -1,4 +1,4 @@
-﻿namespace ObjectDetectTrackApp.Models
+namespace ObjectDetectTrackApp.Models
 {
     public class Track
     {
