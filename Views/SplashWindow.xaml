@@ -29,7 +29,7 @@
         <Border Grid.Row="0" Background="#E6000000" Padding="22,12"
                 HorizontalAlignment="Center" VerticalAlignment="Center"
                 BorderBrush="#333333" BorderThickness="1">
-            <TextBlock x:Name="Title" Text="DETECTOR"
+            <TextBlock x:Name="Title" Text="GRIDHOUND"
                        Foreground="#ccffff" FontSize="26" FontWeight="Bold"/>
         </Border>
 

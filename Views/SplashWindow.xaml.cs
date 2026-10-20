@@ -20,11 +20,11 @@ namespace ObjectDetectTrackApp.Views
     /// </summary>
     public partial class SplashWindow : Window
     {
-        private const int TotalTicks = 46;      // ~2.3 с при 50 мс
+        private const int TotalTicks = 56;      // ~2.8 с: GRIDHOUND · TRACK UTILITY = 25 симв. × 2 тика
         private const int WelcomeTicks = 16;    // пауза WELCOME ~0.8 с
         private const string RainAlphabet = "0123456789ABCDEF#$%&*+=/\\<>|";
         private const string ScrambleAlphabet = "#%&$@01<>/\\*+=ABCDEF";
-        private const string TitleTarget = "DETECTOR · TRACK UTILITY";
+        private const string TitleTarget = "GRIDHOUND · TRACK UTILITY";
         private static readonly char[] RainChars = RainAlphabet.ToCharArray();
         private static readonly char[] ScrambleChars = ScrambleAlphabet.ToCharArray();
         private static readonly Random Rng = new Random();
