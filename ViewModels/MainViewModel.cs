@@ -252,11 +252,11 @@ namespace ObjectDetectTrackApp.ViewModels
 
                 _detectorService = new DetectorService(modelPath, _logService);
                 ApplyHighlightMode();
-                _logService.Info("✓ Detector initialized successfully");
+                _logService.Info("✓ GridHound initialized successfully");
             }
             catch (Exception ex)
             {
-                _logService.Error($"Detector init failed: {ex.Message}");
+                _logService.Error($"GridHound init failed: {ex.Message}");
             }
         }
 
