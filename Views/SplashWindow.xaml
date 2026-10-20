@@ -1,0 +1,64 @@
+﻿<Window x:Class="ObjectDetectTrackApp.Views.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Splash"
+        Width="800" Height="460"
+        WindowStyle="None" ResizeMode="NoResize"
+        ShowInTaskbar="False" Topmost="True"
+        WindowStartupLocation="CenterScreen"
+        Background="#000000"
+        BorderBrush="#ddffff" BorderThickness="2"
+        FontFamily="Consolas"
+        SnapsToDevicePixels="True">
+
+    <!-- Палитра = основная тема интерфейса: bg #000000, fg #FFFFFF, accent #00FF00,
+         warn #FFAA00, grid #333333 (см. Resources/TerminalTheme.xaml) -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="164"/>
+        </Grid.RowDefinitions>
+
+        <!-- Дождь: НА ВСЁ окно (нижняя панель непрозрачна и «накрывает» его, на
+             прогресс-бар символы физически не попадают). Колонки считаются по факту. -->
+        <TextBlock Grid.Row="0" Grid.RowSpan="2" x:Name="Rain"
+                   Foreground="#dd0023" Opacity="0.20" FontSize="13"
+                   Margin="12,8,12,4" IsHitTestVisible="False"
+                   LineStackingStrategy="BlockLineHeight" LineHeight="15"/>
+
+        <Border Grid.Row="0" Background="#E6000000" Padding="22,12"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                BorderBrush="#333333" BorderThickness="1">
+            <TextBlock x:Name="Title" Text="GRIDHOUND"
+                       Foreground="#ddffff" FontSize="26" FontWeight="Bold"/>
+        </Border>
+
+        <!-- Нижняя панель: непрозрачный фон = цвет интерфейса -->
+        <Border Grid.Row="1" Background="#000000" BorderBrush="#333333"
+                BorderThickness="0,1,0,0" Padding="16,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" x:Name="Steps"
+                           Foreground="#FFFFFF" Opacity="0.85" FontSize="12" LineHeight="16"
+                           LineStackingStrategy="BlockLineHeight"/>
+
+                <TextBlock Grid.Row="1" x:Name="Bar" Margin="0,10,0,4"
+                           Foreground="#ddffff" FontSize="14"/>
+
+                <TextBlock Grid.Row="2" x:Name="Specs"
+                           Foreground="#FFFFFF" Opacity="0.55" FontSize="10"
+                           Text="yolo v8/v11 · onnx runtime (dml/cuda) · opencv 4.9 · sort: iou+kalman · multi-source · timeline &amp; selective frames export"/>
+
+                <TextBlock Grid.Row="3" x:Name="StatusLine" Margin="0,4,0,0"
+                           Foreground="#FFAA00" FontSize="11"
+                           Text="initializing…"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
