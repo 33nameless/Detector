@@ -64,7 +64,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- LEFT: Sources/Queue -->
-            <Border Grid.Column="0" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4,15,4,-225">
+            <Border Grid.Column="0" Background="#000000" BorderBrush="#FFFFFF" BorderThickness="1" Padding="8" Margin="4,4,4,-225">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- SOURCES header -->
@@ -317,7 +317,7 @@
                 <ColumnDefinition Width="300"/>
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Height="176" VerticalAlignment="Bottom" Background="#000000"
-                    BorderBrush="#FFFFFF" BorderThickness="1" Padding="8,4" Margin="0,0,4,0">
+                    BorderBrush="#FFFFFF" BorderThickness="1" Padding="8,4" Margin="4,0,4,4">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
