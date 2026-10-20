@@ -422,18 +422,6 @@ IoU **0.92–0.97**. Контур садится на силуэт.
   всю строку, пустого чёрного прямоугольника больше нет).
 - Превью и правые секции не тронуты.
 
-
-## Как применять
-
-Вариант А (git, клон репозитория):
-```
-cd Detector
-git apply fix_Detector.patch
-```
-Вариант Б: распаковать `Detector_fixed.zip` поверх (или взять файлы из архива).
-
-Тесты (по желанию, работают и на Windows): `cd tests\PostprocessTests && dotnet run`.
-
 ## Как проверялось здесь (Linux, без GUI)
 
 1. Полная сборка WPF-проекта: `dotnet build -c Release -p:EnableWindowsTargeting=true`
