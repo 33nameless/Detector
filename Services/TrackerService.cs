@@ -24,13 +24,19 @@ namespace ObjectDetectTrackApp.Services
             _logService = logService;
         }
 
+        /// <summary>Кадр сортировки: сопоставить детекции с треками, проставить TrackId.</summary>
         public List<Detection> Update(List<Detection> detections)
         {
-            // Predict
+            // Predict (только «осиротевшие» треки, см. комментарий в их цикле ниже)
             foreach (var track in _activeTracks)
             {
                 track.Predict();
             }
+
+            // Сбрасываем id: ниже проставим актуальные (чтобы при повторном вызове
+            // с той же детекцией не оставались устаревшие TrackId)
+            foreach (var d in detections)
+                d.TrackId = null;
 
             // Match detections to tracks
             var matches = MatchDetectionsToTracks(detections);
@@ -92,6 +98,14 @@ namespace ObjectDetectTrackApp.Services
                     var track = _activeTracks[t];
                     var detection = detections[d];
 
+                    // не склеиваем разные классы (иначе id может «перепрыгнуть»
+                    // с автобуса на человека при пересечении боксов)
+                    if (!string.Equals(track.ClassName, detection.ClassName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        costMatrix[d, t] = 1.0f;
+                        continue;
+                    }
+
                     float iou = CalculateIou(detection, track.LastDetection);
                     costMatrix[d, t] = 1.0f - iou; // Стоимость = 1 - IoU
                 }
@@ -128,6 +142,10 @@ namespace ObjectDetectTrackApp.Services
                 LastDetection = detection
             };
 
+            // id объект получает сразу (а не со второго кадра) — иначе на статичном
+            // изображении номера никогда бы не появились
+            detection.TrackId = track.Id;
+
             track.KalmanFilter.Init(
                 detection.X + detection.Width / 2.0f,
                 detection.Y + detection.Height / 2.0f,
@@ -139,6 +157,13 @@ namespace ObjectDetectTrackApp.Services
         }
 
         public int GetActiveTrackCount() => _activeTracks.Count;
+
+        /// <summary>Полный сброс (новый источник/новое воспроизведение).</summary>
+        public void Reset()
+        {
+            _activeTracks.Clear();
+            _nextTrackId = 1;
+        }
     }
 
     /// <summary>

@@ -44,14 +44,19 @@ namespace ObjectDetectTrackApp.Services
     }
 
     /// <summary>
-    /// Сервис логирования (потокобезопасный)
+    /// Сервис логирования (потокобезопасный, ФОНОВЫЕ ПОТОКИ НЕ БЛОКИРУЕТ).
+    /// Изменения коллекции — всегда на UI-потоке, но через BeginInvoke: с синхронным
+    /// Dispatcher.Invoke помп умирал в дедлоке, когда UI ждал его в Stop()/экспорте.
     /// </summary>
     public class LogService
     {
         private readonly ObservableCollection<LogEntry> _logs = new();
-        private readonly object _lockObj = new();
 
-        public IReadOnlyList<LogEntry> Logs => _logs;
+        /// <summary>
+        /// Живая коллекция (тот же экземпляр, а не копия!). Изменяется только в UI-потоке
+        /// (AddLog инлайнит на UI и BeginInvoke из фона), поэтому безопасно биндить на ListBox.
+        /// </summary>
+        public ObservableCollection<LogEntry> Logs => _logs;
 
         public void Info(string message)
         {
@@ -70,27 +75,43 @@ namespace ObjectDetectTrackApp.Services
 
         private void AddLog(LogEntry entry)
         {
-            lock (_lockObj)
-            {
-                Application.Current?.Dispatcher?.Invoke(() =>
-                {
-                    _logs.Insert(0, entry);
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null) return;
 
-                    // Ограничиваем количество (последние 100)
-                    while (_logs.Count > 100)
-                    {
-                        _logs.RemoveAt(_logs.Count - 1);
-                    }
-                });
+            if (dispatcher.CheckAccess())
+            {
+                InsertUi(entry); // уже на UI — пишем сразу
+            }
+            else
+            {
+                dispatcher.BeginInvoke(new Action(() =>
+                {
+                    try { InsertUi(entry); } catch { } // UI может умирать вместе с приложением
+                }));
+            }
+        }
+
+        private void InsertUi(LogEntry entry)
+        {
+            _logs.Insert(0, entry);
+
+            // Ограничиваем количество (последние 100)
+            while (_logs.Count > 100)
+            {
+                _logs.RemoveAt(_logs.Count - 1);
             }
         }
 
         public void Clear()
         {
-            lock (_lockObj)
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null) return;
+
+            if (dispatcher.CheckAccess()) _logs.Clear();
+            else dispatcher.BeginInvoke(new Action(() =>
             {
-                Application.Current?.Dispatcher?.Invoke(() => _logs.Clear());
-            }
+                try { _logs.Clear(); } catch { }
+            }));
         }
     }
 }

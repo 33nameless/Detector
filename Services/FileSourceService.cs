@@ -144,22 +144,22 @@ namespace ObjectDetectTrackApp.Services
 
         private FrameData CreateFrameData(Mat frame, int frameIndex, double timestamp)
         {
-            Mat rgb = new Mat();
-            Cv2.CvtColor(frame, rgb, ColorConversionCodes.BGR2RGB);
-
-            byte[] imageBytes = rgb.ToBytes(".png");
+            // frame — BGR (нативный порядок каналов OpenCV), и оставляем BGR.
+            // Раньше кадр сначала переводили в RGB, а потом кодировали ImEncode,
+            // который ждёт именно BGR — из-за этого на экране менялись местами
+            // красный и синий («инверсия»). Конверсия в RGB для сети делается
+            // внутри DetectorService,Так всё и задумано: BGR.
+            byte[] imageBytes = frame.ToBytes(".png");
 
             var frameData = new FrameData
             {
-                Frame = rgb.Clone(),
-                FrameBytes = imageBytes,
+                Frame = frame.Clone(), // BGR
+                FrameBytes = imageBytes, // PNG из BGR -> корректные цвета
                 FrameIndex = frameIndex,
                 Timestamp = timestamp,
                 Width = frame.Width,
                 Height = frame.Height
             };
-
-            rgb.Dispose();
             return frameData;
         }
     }
